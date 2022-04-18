@@ -4,7 +4,6 @@ Simon game using different random laws and methods
 
 ## Live demo
 
-A live demo can be found at
-leogenot.github.io/Simon_game
+A live demo can be found [HERE](https://leogenot.github.io/Simon_game)
 
 
