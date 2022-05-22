@@ -227,7 +227,7 @@ function Normal(mean, stdv) {
 
 var bernoulli = Bernoulli(.7) //difficulty
 var uniform = Uniform(0, 4)
-var triangle = Triangle(1, 0, 10) //sounds
+var triangle = Triangle(0, 0, 4) //sounds
 var binomial = Binomial(10, .4) //rythm
 var normal = Normal(600, 600) //colors
 
@@ -306,8 +306,8 @@ function playRound(nextSequence) {
 }
 
 function nextStep() {
-  const tiles = ['red', 'green', 'blue', 'yellow'];
-  const random = tiles[Math.floor(Math.random() * tiles.length)];
+  const tiles = ['1', '2', '3', '4'];
+  const random = tiles[Math.floor(triangle.sample())];
   return random;
 }
 
