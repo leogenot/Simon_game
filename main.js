@@ -7,13 +7,6 @@ R5: sons différents
 */
 
 
-
-
-let sequence = [];
-let humanSequence = [];
-let level = 0;
-let rythm = 600;
-
 const startButton = document.querySelector('.js-start');
 const GeometricButton = document.querySelector('.geometric-button');
 const ExpoButton = document.querySelector('.expo-button');
@@ -29,121 +22,6 @@ const uniformButton = document.querySelector('.uniform-button');
 const triangleButton = document.querySelector('.triangle-button');
 const binomialButton = document.querySelector('.binomial-button');
 const normalButton = document.querySelector('.normal-button');
-
-
-
-const info = document.querySelector('.js-info');
-const heading = document.querySelector('.js-heading');
-const tileContainer = document.querySelector('.js-container');
-
-function resetGame(text) {
-  alert(text);
-  sequence = [];
-  humanSequence = [];
-  level = 0;
-  startButton.classList.remove('hidden');
-  heading.textContent = 'Simon Game';
-  info.classList.add('hidden');
-  tileContainer.classList.add('unclickable');
-}
-
-function humanTurn(level) {
-  tileContainer.classList.remove('unclickable');
-  info.textContent = `Your turn: ${level} Tap${level > 1 ? 's' : ''}`;
-}
-
-function activateTile(color) {
-  const tile = document.querySelector(`[data-tile='${color}']`);
-  const sound = document.querySelector(`[data-sound='${color}']`);
-
-  tile.classList.add('activated');
-  sound.play();
-
-  setTimeout(() => {
-    tile.classList.remove('activated');
-  }, 300);
-}
-
-function playRound(nextSequence) {
-  nextSequence.forEach((color, index) => {
-    setTimeout(() => {
-      activateTile(color);
-    }, (index + 1) * rythm);
-  });
-
-}
-
-function nextStep() {
-  const tiles = ['red', 'green', 'blue', 'yellow'];
-  const random = tiles[Math.floor(Math.random() * tiles.length)];
-  for (let i = 0; i < 10; i++)
-    console.log(gaussianRandom(1, 4))
-  return random;
-}
-
-function nextRound() {
-  level += 1;
-
-  tileContainer.classList.add('unclickable');
-  info.textContent = 'Wait for the computer';
-  heading.textContent = `Level ${level} of 20`;
-
-
-  const nextSequence = [...sequence];
-  nextSequence.push(nextStep());
-  playRound(nextSequence);
-
-  sequence = [...nextSequence];
-  setTimeout(() => {
-    humanTurn(level);
-  }, level * 600 + 1000);
-}
-
-function handleClick(tile) {
-  const index = humanSequence.push(tile) - 1;
-  const sound = document.querySelector(`[data-sound='${tile}']`);
-  sound.play();
-
-  const remainingTaps = sequence.length - humanSequence.length;
-
-  if (humanSequence[index] !== sequence[index]) {
-    resetGame('Oops! Game over, you pressed the wrong tile');
-    return;
-  }
-
-  if (humanSequence.length === sequence.length) {
-    if (humanSequence.length === 20) {
-      resetGame('Congrats! You completed all the levels');
-      return
-    }
-
-    humanSequence = [];
-    info.textContent = 'Success! Keep going!';
-    setTimeout(() => {
-      nextRound();
-    }, 1000);
-    return;
-  }
-
-  info.textContent = `Your turn: ${remainingTaps} Tap${remainingTaps > 1 ? 's' : ''
-    }`;
-}
-
-function startGame() {
-  startButton.classList.add('hidden');
-  info.classList.remove('hidden');
-  info.textContent = 'Wait for the computer';
-  nextRound();
-}
-
-startButton.addEventListener('click', startGame);
-tileContainer.addEventListener('click', event => {
-  const { tile } = event.target.dataset;
-
-  if (tile) handleClick(tile);
-});
-
-
 
 
 /* RANDOM DISTRIBUTIONS */
@@ -347,26 +225,150 @@ function Normal(mean, stdv) {
 
 
 
-var bernoulli = Bernoulli(.7)
-var uniform = Uniform(1, 4)
-var triangle = Triangle(1, 4, 10)
-var binomial = Binomial(100, .4)
-var normal = Normal(100, 10)
+var bernoulli = Bernoulli(.7) //difficulty
+var uniform = Uniform(0, 4)
+var triangle = Triangle(1, 0, 10) //sounds
+var binomial = Binomial(10, .4) //rythm
+var normal = Normal(600, 600) //colors
 
 bernoulliButton.addEventListener('click', event => {
   console.log(bernoulli.sampleMany(10));
 });
 
 uniformButton.addEventListener('click', event => {
-  console.log(uniform.sampleMany(10));
+  for(let i = 0; i < 10; i++)
+    console.log(Math.floor(uniform.sample()));
 });
 triangleButton.addEventListener('click', event => {
-  console.log(triangle.sampleMany(10));
+  for(let i = 0; i < 10; i++)
+    console.log(Math.floor(triangle.sample()));
 });
 binomialButton.addEventListener('click', event => {
-  console.log(binomial.sampleMany(100));
+  for(let i = 0; i < 10; i++)
+    console.log(Math.floor(binomial.sample() * 100));
 });
 normalButton.addEventListener('click', event => {
   console.log(normal.sampleMany(100));
 });
 
+
+
+/* GAME FUNCTIONS*/
+
+
+let sequence = [];
+let humanSequence = [];
+let level = 0;
+let rythm = Math.floor(binomial.sample() * 100);  //new rythm when page loads
+console.log(rythm)
+
+
+
+const info = document.querySelector('.js-info');
+const heading = document.querySelector('.js-heading');
+const tileContainer = document.querySelector('.js-container');
+
+function resetGame(text) {
+  alert(text);
+  sequence = [];
+  humanSequence = [];
+  level = 0;
+  startButton.classList.remove('hidden');
+  heading.textContent = 'Simon Game';
+  info.classList.add('hidden');
+  tileContainer.classList.add('unclickable');
+}
+
+function humanTurn(level) {
+  tileContainer.classList.remove('unclickable');
+  info.textContent = `Your turn: ${level} Tap${level > 1 ? 's' : ''}`;
+}
+
+function activateTile(color) {
+  const tile = document.querySelector(`[data-tile='${color}']`);
+  const sound = document.querySelector(`[data-sound='${color}']`);
+
+  tile.classList.add('activated');
+  sound.play();
+
+  setTimeout(() => {
+    tile.classList.remove('activated');
+  }, 100);
+}
+
+function playRound(nextSequence) {
+  nextSequence.forEach((color, index) => {
+    setTimeout(() => {
+      activateTile(color);
+    }, (index + 1) * rythm);
+  });
+
+}
+
+function nextStep() {
+  const tiles = ['red', 'green', 'blue', 'yellow'];
+  const random = tiles[Math.floor(Math.random() * tiles.length)];
+  return random;
+}
+
+function nextRound() {
+  level += 1;
+
+  tileContainer.classList.add('unclickable');
+  info.textContent = 'Wait for the computer';
+  heading.textContent = `Level ${level} of 20`;
+
+
+  const nextSequence = [...sequence];
+  nextSequence.push(nextStep());
+  playRound(nextSequence);
+
+  sequence = [...nextSequence];
+  setTimeout(() => {
+    humanTurn(level);
+  }, level * 600 + 1000);
+}
+
+function handleClick(tile) {
+  const index = humanSequence.push(tile) - 1;
+  const sound = document.querySelector(`[data-sound='${tile}']`);
+  sound.play();
+
+  const remainingTaps = sequence.length - humanSequence.length;
+
+  if (humanSequence[index] !== sequence[index]) {
+    resetGame('Oops! Game over, you pressed the wrong tile');
+    return;
+  }
+
+  if (humanSequence.length === sequence.length) {
+    if (humanSequence.length === 20) {
+      resetGame('Congrats! You completed all the levels');
+      return
+    }
+
+    humanSequence = [];
+    info.textContent = 'Success! Keep going!';
+    setTimeout(() => {
+      nextRound();
+    }, 1000);
+    return;
+  }
+
+  info.textContent = `Your turn: ${remainingTaps} Tap${remainingTaps > 1 ? 's' : ''
+    }`;
+}
+
+function startGame() {
+  startButton.classList.add('hidden');
+  info.classList.remove('hidden');
+  info.textContent = 'Wait for the computer';
+  nextRound();
+}
+
+startButton.addEventListener('click', startGame);
+tileContainer.addEventListener('click', event => {
+  const { tile } = event.target.dataset;
+
+  if (tile) handleClick(tile);
+});
