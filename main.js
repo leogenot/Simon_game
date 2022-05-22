@@ -227,7 +227,7 @@ function Normal(mean, stdv) {
 
 var bernoulli = Bernoulli(.7) //difficulty
 var uniform = Uniform(0, 4)
-var triangle = Triangle(0, 0, 4) //sounds
+var triangle = Triangle(0, 0, 4) //next tile
 var binomial = Binomial(10, .4) //rythm
 var normal = Normal(600, 600) //colors
 
