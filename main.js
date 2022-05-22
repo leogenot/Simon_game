@@ -1,5 +1,5 @@
 /*
-R1: rythme loi exponentielle
+R1: rythme loi exponentielle entre 900 lent et 100 rapide
 R2: couleurs carrés
 R3: difficulté facile
 R4: difficulté difficile
@@ -12,6 +12,7 @@ R5: sons différents
 let sequence = [];
 let humanSequence = [];
 let level = 0;
+let rythm = 600;
 
 const startButton = document.querySelector('.js-start');
 const GeometricButton = document.querySelector('.geometric-button');
@@ -19,6 +20,18 @@ const ExpoButton = document.querySelector('.expo-button');
 const KhiSquareButton = document.querySelector('.khisquare-button');
 const rademacherButton = document.querySelector('.rademacher-button');
 const poissonButton = document.querySelector('.poisson-button');
+
+
+
+
+const bernoulliButton = document.querySelector('.bernoulli-button');
+const uniformButton = document.querySelector('.uniform-button');
+const triangleButton = document.querySelector('.triangle-button');
+const binomialButton = document.querySelector('.binomial-button');
+const normalButton = document.querySelector('.normal-button');
+
+
+
 const info = document.querySelector('.js-info');
 const heading = document.querySelector('.js-heading');
 const tileContainer = document.querySelector('.js-container');
@@ -55,8 +68,9 @@ function playRound(nextSequence) {
   nextSequence.forEach((color, index) => {
     setTimeout(() => {
       activateTile(color);
-    }, (index + 1) * 600);
+    }, (index + 1) * rythm);
   });
+
 }
 
 function nextStep() {
@@ -130,115 +144,229 @@ tileContainer.addEventListener('click', event => {
 });
 
 
-function geometricDistribution(min, max, prob) {
-  var q = 0;
-  var p = Math.pow(prob, 1 / (max - min));
-  while (true) {
-    q = Math.ceil(Math.log(1 - Math.random()) / Math.log(p)) + (min - 1);
-    if (q <= max) {
-      return q;
-    }
+
+
+/* RANDOM DISTRIBUTIONS */
+
+
+
+var DistribSequence = function (n) {
+  var result = [];
+  for (var i = 0; i < n; i++) {
+    result[i] = i;
   }
-}
-
-
-GeometricButton.addEventListener('click', event => {
-  console.log(geometricDistribution(0, 100, 10));
-});
-
-
-function exponentialDistribution(lambda) {
-  return -Math.log(1.0 - Math.random()) / lambda;
-}
-
-ExpoButton.addEventListener('click', event => {
-  console.log(exponentialDistribution(10));
-});
-
-function gamma(z) {
-  return Math.sqrt(2 * Math.PI / z) * Math.pow((1 / Math.E) * (z + 1 / (12 * z - 1 / (10 * z))), z);
-}
-
-function khiSquareDistribution(x, k_) {
-  if (x < 0) return 0;
-  var k = k_ / 2;
-  return 1 / (Math.pow(2, k) * gamma(k))
-    * Math.pow(x, k - 1)
-    * Math.exp(-x / 2)
-
+  return result;
 };
 
+function Bernoulli(p) {
+  let type = "bernoulli";
+  function sample() {
+    var r = Math.random();
+    if (r < p) {
+      return true;
+    } else {
+      return false;
+    }
+  };
 
-KhiSquareButton.addEventListener('click', event => {
-  console.log(khiSquareDistribution(10, 2));
-});
+  function sampleMany(count) {
+    return DistribSequence(count).map(sample);
+  };
+
+  function densityAt(value) {
+    if (value) {
+      return p;
+    } else {
+      return 1 - p;
+    }
+  };
+  return {
+    sample: sample,
+    sampleMany: sampleMany,
+    densityAt: densityAt
+  };
+}
 
 
-function rademacherDistribution(min, max, skew) {
-  let u = 0, v = 0;
-  while (u === 0) u = Math.random() //Converting [0,1) to (0,1)
-  while (v === 0) v = Math.random()
-  let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)
 
-  num = num / 10.0 + 0.5 // Translate to 0 -> 1
-  if (num > 1 || num < 0)
-    num = rademacherDistribution(min, max, skew) // resample between 0 and 1 if out of range
+function Uniform(start, end) {
+  let type = "uniform";
 
-  else {
-    num = Math.pow(num, skew) // Skew
-    num *= max - min // Stretch to fill range
-    num += min // offset to min
+  var length = end - start;
+
+  function sample() {
+    var r = Math.random() * length;
+    return start + r;
+  };
+
+  function sampleMany(count) {
+    return DistribSequence(count).map(sample);
+  };
+
+  function densityAt(value) {
+    if (value < start) { return 0; }
+    if (value >= end) { return 0; }
+    return 1 / length;
+  };
+  return {
+    sample: sample,
+    sampleMany: sampleMany,
+    densityAt: densityAt
+  };
+}
+
+function Triangle(min, mode, max) {
+  let type = "triangle";
+
+  var l1 = mode - min;
+  var l2 = max - mode;
+  var h = 2 / (l1 + l2);
+  var slope1 = h / l1;
+  var slope2 = h / l2;
+
+  function densityAt(value) {
+    if (value <= min) return 0;
+    if (value >= max) return 0;
+    if (value > min && value <= mode) {
+      return slope1 * (value - min);
+    }
+    if (value > mode && value < max) {
+      return slope2 * (max - value);
+    }
+    return null;
   }
-  return num
+
+  var uniform1 = Uniform(min, max);
+  var uniform2 = Uniform(0, densityAt(mode));
+
+  function sample() {
+    var r1 = uniform1.sample();
+    var r2 = uniform2.sample();
+    while (r2 > densityAt(r1)) {
+      r1 = uniform1.sample();
+      r2 = uniform2.sample();
+    }
+    return r1;
+  };
+
+  function sampleMany(count) {
+    return DistribSequence(count).map(sample);
+  };
+
+  return {
+    densityAt: densityAt,
+    sample: sample,
+    sampleMany: sampleMany
+  };
+
+
 }
 
-function gaussianRand() {
-  var rand = 0;
 
-  for (var i = 0; i < 6; i += 1) {
-    rand += Math.random();
+var factorial = function (n) {
+  var result = 1;
+  for (var i = 2; i <= n; i++) {
+    result = result * i;
+  }
+  return result;
+};
+
+var choose = function (n, k) {
+  var denom = factorial(k) * factorial(n - k);
+  return factorial(n) / denom;
+};
+
+function Binomial(trials, rate) {
+
+  let type = "Binomial"
+
+  function densityAt(value) {
+    var a = choose(trials, value);
+    var b = Math.pow(rate, value);
+    var c = Math.pow(1 - rate, trials - value);
+    return a * b * c;
   }
 
-  return rand / 6;
+  function sample() {
+    var r = Math.random();
+    var sum = 0;
+    var d = 0;
+    for (var i = 0; i <= trials; i++) {
+      d = densityAt(i);
+      sum = sum + d;
+      if (r <= sum) { return i; }
+    }
+  };
+
+  function sampleMany(count) {
+    return DistribSequence(count).map(sample);
+  };
+
+  return {
+    densityAt: densityAt,
+    sample: sample,
+    sampleMany: sampleMany
+  };
+
 }
 
-function gaussianRandom(start, end) {
-  return Math.floor(start + gaussianRand() * (end - start + 1));
+
+let twoPi = Math.PI * 2;
+
+function Normal(mean, stdv) {
+  let type = "Normal"
+  let variance = stdv * stdv;
+  let c = 1 / Math.sqrt(twoPi * variance);
+  let twoV = 2 * variance;
+
+  function densityAt(x) {
+    let a = (x - mean) * (x - mean);
+    let e = a / twoV;
+    return c * Math.exp(-e);
+  }
+
+  function sample() {
+    let u1 = Math.random();
+    let u2 = Math.random();
+    let r = Math.sqrt(-2 * Math.log(u1)) * Math.cos(twoPi * u2);
+    return r * stdv + mean;
+  };
+
+  function sampleMany(count) {
+    return DistribSequence(count).map(sample);
+  };
+
+
+  return {
+    densityAt: densityAt,
+    sample: sample,
+    sampleMany: sampleMany
+  };
+
 }
 
 
-function customRnd(c) {
-  // (1 - Math.random()) to keep [0;1[ instead of ]0;1]
-  /*     return 1 - Math.sqrt(1 - Math.random());     */
 
-  // More general method, using parameter c indicating the highest probability point:
-  c = c || 0;
-  var u = Math.random();
-  if (u < c) return Math.sqrt(u * c);
-  return 1 - Math.sqrt((1 - u) * (1 - c));
-}
+var bernoulli = Bernoulli(.7)
+var uniform = Uniform(1, 4)
+var triangle = Triangle(1, 4, 10)
+var binomial = Binomial(100, .4)
+var normal = Normal(100, 10)
 
-
-rademacherButton.addEventListener('click', event => {
-  console.log(customRnd(4));
+bernoulliButton.addEventListener('click', event => {
+  console.log(bernoulli.sampleMany(10));
 });
 
-function poissonRand(mean) {
-
-  var L = Math.exp(-mean);
-  var p = 1.0;
-  var k = 0;
-
-  do {
-    k++;
-    p *= Math.random();
-  } while (p > L);
-
-  k - 1;
-
-  return p;
-}
-
-poissonButton.addEventListener('click', event => {
-  console.log(poissonRand(2));
+uniformButton.addEventListener('click', event => {
+  console.log(uniform.sampleMany(10));
 });
+triangleButton.addEventListener('click', event => {
+  console.log(triangle.sampleMany(10));
+});
+binomialButton.addEventListener('click', event => {
+  console.log(binomial.sampleMany(100));
+});
+normalButton.addEventListener('click', event => {
+  console.log(normal.sampleMany(100));
+});
+
