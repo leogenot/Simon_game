@@ -329,7 +329,14 @@ function humanTurn(level) {
 
 function activateTile(color) {
   const tile = document.querySelector(`[data-tile='${color}']`);
-  const sound = document.querySelector(`[data-sound='${color}']`);
+  var sound
+  if (heading.textContent == `Level ${level} of 20`) {
+    random_sound = Math.floor(uniform.sample()) + 1
+    sound = document.querySelector(`[data-sound='${random_sound}']`);
+  }
+  if (heading.textContent == `Level ${level} of 10`) {
+    sound = document.querySelector(`[data-sound='${color}']`);
+  }
   tile.classList.add('activated');
   sound.play();
 
