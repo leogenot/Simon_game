@@ -1,6 +1,6 @@
 # Simon Game Starter
 
-Simon game using different random laws and methods
+Simon game using different random laws and methods.
 Not enough time to write clean code 
 
 ## Live demo
