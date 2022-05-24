@@ -1,21 +1,6 @@
-/*
-R1: rythme loi exponentielle entre 900 lent et 100 rapide
-R2: couleurs carrés
-R3: difficulté facile
-R4: difficulté difficile
-R5: sons différents
-*/
-
-
 const startButton = document.querySelector('.js-start');
-const GeometricButton = document.querySelector('.geometric-button');
-const ExpoButton = document.querySelector('.expo-button');
-const KhiSquareButton = document.querySelector('.khisquare-button');
-const rademacherButton = document.querySelector('.rademacher-button');
-const poissonButton = document.querySelector('.poisson-button');
-
-
-
+const easyButton = document.querySelector('.js-start-easy');
+const hardButton = document.querySelector('.js-start-hard');
 
 const bernoulliButton = document.querySelector('.bernoulli-button');
 const uniformButton = document.querySelector('.uniform-button');
@@ -225,32 +210,66 @@ function Normal(mean, stdv) {
 
 
 
-var bernoulli = Bernoulli(.7) //difficulty
-var uniform = Uniform(0, 4)
-var triangle = Triangle(0, 0, 4) //next tile
-var binomial = Binomial(10, .4) //rythm
-var normal = Normal(600, 600) //colors
+var bernoulli = Bernoulli(.7) //difficulty done
+var uniform = Uniform(0, 4)//next tile done
+var triangle = Triangle(5, 0, 30) // number of levels done 
+var binomial = Binomial(10, .5) //rythm done 
+var normal = Normal(600, 600) //colors 
 
 bernoulliButton.addEventListener('click', event => {
   console.log(bernoulli.sampleMany(10));
 });
 
 uniformButton.addEventListener('click', event => {
-  for(let i = 0; i < 10; i++)
+  for (let i = 0; i < 10; i++)
     console.log(Math.floor(uniform.sample()));
 });
 triangleButton.addEventListener('click', event => {
-  for(let i = 0; i < 10; i++)
+  for (let i = 0; i < 10; i++)
     console.log(Math.floor(triangle.sample()));
 });
 binomialButton.addEventListener('click', event => {
-  for(let i = 0; i < 10; i++)
+  for (let i = 0; i < 10; i++)
     console.log(Math.floor(binomial.sample() * 100));
 });
-normalButton.addEventListener('click', event => {
-  console.log(normal.sampleMany(100));
-});
 
+
+
+
+normalButton.addEventListener('click', event => {
+  const num = Math.abs(normal.sample());
+  var long_int = num + '';
+  long_int = long_int.replace('.', '');
+  long_int = parseInt(long_int);
+  long_int = long_int.toFixed(6)
+
+
+  var long_int_to_string = String(long_int).slice(0, 6);
+  var final_number = Number(long_int_to_string);
+
+  final_number = String(final_number)
+  final_number = "#" + final_number
+
+  console.log(final_number);
+
+
+
+  const tile = document.querySelector(`[data-tile='1']`);
+  var generated_color = generateColorFromNormal()
+  console.log(generated_color)
+  const tile_css = {
+    'background-color': generated_color,
+    'box-shadow': '0 0 0 1px ' + generated_color + ' inset, 0 0 0 4px ' + generated_color + ' inset, 0 0px 0 0 ' + generated_color + ' , 0 0px 0 0px ' + generated_color + ' , 0 8px 20px 0px ' + generated_color
+
+  };
+
+  for (let [key, val] of Object.entries(tile_css)) {
+    tile.style[key] = val;
+  }
+
+
+
+});
 
 
 /* GAME FUNCTIONS*/
@@ -259,8 +278,8 @@ normalButton.addEventListener('click', event => {
 let sequence = [];
 let humanSequence = [];
 let level = 0;
-let rythm = Math.floor(binomial.sample() * 100);  //new rythm when page loads
-console.log(rythm)
+let rythm
+var binomial
 
 
 
@@ -268,12 +287,36 @@ const info = document.querySelector('.js-info');
 const heading = document.querySelector('.js-heading');
 const tileContainer = document.querySelector('.js-container');
 
+
+
+function generateColorFromNormal() {
+  var normal = Normal(600, 600) //colors 
+  const num = Math.abs(normal.sample());
+  var long_int = num + '';
+  long_int = long_int.replace('.', '');
+  long_int = parseInt(long_int);
+  long_int = long_int.toFixed(6)
+
+
+  var long_int_to_string = String(long_int).slice(0, 6);
+  var final_number = Number(long_int_to_string);
+
+  final_number = String(final_number)
+  final_number = "#" + final_number
+
+  return final_number
+}
+
+
+
 function resetGame(text) {
   alert(text);
   sequence = [];
   humanSequence = [];
   level = 0;
   startButton.classList.remove('hidden');
+  easyButton.classList.remove('hidden');
+  hardButton.classList.remove('hidden');
   heading.textContent = 'Simon Game';
   info.classList.add('hidden');
   tileContainer.classList.add('unclickable');
@@ -287,7 +330,6 @@ function humanTurn(level) {
 function activateTile(color) {
   const tile = document.querySelector(`[data-tile='${color}']`);
   const sound = document.querySelector(`[data-sound='${color}']`);
-
   tile.classList.add('activated');
   sound.play();
 
@@ -296,7 +338,7 @@ function activateTile(color) {
   }, 100);
 }
 
-function playRound(nextSequence) {
+function playRound(nextSequence, rythm) {
   nextSequence.forEach((color, index) => {
     setTimeout(() => {
       activateTile(color);
@@ -307,27 +349,123 @@ function playRound(nextSequence) {
 
 function nextStep() {
   const tiles = ['1', '2', '3', '4'];
-  const random = tiles[Math.floor(triangle.sample())];
+  var uniform_tiles = Uniform(0, 4)
+  const random = tiles[Math.floor(uniform_tiles.sample())];
+
+  if (heading.textContent == `Level ${level} of 20`) {
+    const tile1 = document.querySelector(`[data-tile='1']`);
+    var generated_color = generateColorFromNormal()
+    console.log(generated_color)
+    const tile1_css = {
+      'background-color': generated_color,
+      'box-shadow': '0 0 0 1px ' + generated_color + ' inset, 0 0 0 4px ' + generated_color + ' inset, 0 0px 0 0 ' + generated_color + ' , 0 0px 0 0px ' + generated_color + ' , 0 8px 20px 0px ' + generated_color
+
+    };
+
+    for (let [key, val] of Object.entries(tile1_css)) {
+      tile1.style[key] = val;
+    }
+
+    const tile2 = document.querySelector(`[data-tile='2']`);
+    var generated_color = generateColorFromNormal()
+    console.log(generated_color)
+    const tile2_css = {
+      'background-color': generated_color,
+      'box-shadow': '0 0 0 1px ' + generated_color + ' inset, 0 0 0 4px ' + generated_color + ' inset, 0 0px 0 0 ' + generated_color + ' , 0 0px 0 0px ' + generated_color + ' , 0 8px 20px 0px ' + generated_color
+
+    };
+
+    for (let [key, val] of Object.entries(tile2_css)) {
+      tile2.style[key] = val;
+    }
+
+    const tile3 = document.querySelector(`[data-tile='3']`);
+    var generated_color = generateColorFromNormal()
+    console.log(generated_color)
+    const tile3_css = {
+      'background-color': generated_color,
+      'box-shadow': '0 0 0 1px ' + generated_color + ' inset, 0 0 0 4px ' + generated_color + ' inset, 0 0px 0 0 ' + generated_color + ' , 0 0px 0 0px ' + generated_color + ' , 0 8px 20px 0px ' + generated_color
+
+    };
+
+    for (let [key, val] of Object.entries(tile3_css)) {
+      tile3.style[key] = val;
+    }
+
+    const tile4 = document.querySelector(`[data-tile='4']`);
+    var generated_color = generateColorFromNormal()
+    console.log(generated_color)
+    const tile4_css = {
+      'background-color': generated_color,
+      'box-shadow': '0 0 0 1px ' + generated_color + ' inset, 0 0 0 4px ' + generated_color + ' inset, 0 0px 0 0 ' + generated_color + ' , 0 0px 0 0px ' + generated_color + ' , 0 8px 20px 0px ' + generated_color
+
+    };
+
+    for (let [key, val] of Object.entries(tile4_css)) {
+      tile4.style[key] = val;
+    }
+  }
+
   return random;
 }
 
-function nextRound() {
+function nextRoundEasy() {
+
   level += 1;
 
   tileContainer.classList.add('unclickable');
+
   info.textContent = 'Wait for the computer';
-  heading.textContent = `Level ${level} of 20`;
+
+
+  console.log(level)
+  heading.textContent = `Level ${level} of 10`;
+  binomial = Binomial(8, .8) //rythm
+  rythm = Math.floor(binomial.sample() * 100);
+
+  while (rythm == 0)
+    rythm = Math.floor(binomial.sample() * 100);
 
 
   const nextSequence = [...sequence];
+
   nextSequence.push(nextStep());
-  playRound(nextSequence);
+  playRound(nextSequence, rythm);
 
   sequence = [...nextSequence];
   setTimeout(() => {
     humanTurn(level);
   }, level * 600 + 1000);
 }
+
+
+function nextRoundHard() {
+
+  level += 1;
+
+  tileContainer.classList.add('unclickable');
+
+  info.textContent = 'Wait for the computer';
+
+  console.log(level)
+  binomial = Binomial(4, .75) //rythm
+  rythm = Math.floor(binomial.sample() * 100);
+  while (rythm == 0)
+    rythm = Math.floor(binomial.sample() * 100);
+  heading.textContent = `Level ${level} of 20`;
+
+
+  const nextSequence = [...sequence];
+
+  nextSequence.push(nextStep());
+  playRound(nextSequence, rythm);
+
+  sequence = [...nextSequence];
+  setTimeout(() => {
+    humanTurn(level);
+  }, level * 600 + 1000);
+}
+
 
 function handleClick(tile) {
   const index = humanSequence.push(tile) - 1;
@@ -350,7 +488,10 @@ function handleClick(tile) {
     humanSequence = [];
     info.textContent = 'Success! Keep going!';
     setTimeout(() => {
-      nextRound();
+      if (heading.textContent == `Level ${level} of 10`)
+        nextRoundEasy();
+      if (heading.textContent == `Level ${level} of 20`)
+        nextRoundHard();
     }, 1000);
     return;
   }
@@ -361,14 +502,30 @@ function handleClick(tile) {
 
 function startGame() {
   startButton.classList.add('hidden');
+  easyButton.classList.add('hidden');
+  hardButton.classList.add('hidden');
   info.classList.remove('hidden');
   info.textContent = 'Wait for the computer';
-  nextRound();
+
+  var value = this.value;
+  if (value == 0)
+    nextRoundEasy();
+  if (value == 1) {
+    random_level = bernoulli.sample()
+    console.log(random_level)
+    if (random_level == true)
+      nextRoundEasy();
+    if (random_level == false)
+      nextRoundHard();
+  }
+  if (value == 2)
+    nextRoundHard();
 }
 
-startButton.addEventListener('click', startGame);
+startButton.addEventListener('click', startGame, false);
+easyButton.addEventListener('click', startGame, false);
+hardButton.addEventListener('click', startGame, false);
 tileContainer.addEventListener('click', event => {
   const { tile } = event.target.dataset;
-
   if (tile) handleClick(tile);
 });
