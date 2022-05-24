@@ -211,10 +211,10 @@ function Normal(mean, stdv) {
 
 
 var bernoulli = Bernoulli(.7) //difficulty done
-var uniform = Uniform(0, 4)//next tile done
-var triangle = Triangle(5, 0, 30) // number of levels done 
+var uniform = Uniform(0, 4)//next tile and sound done
+var triangle = Triangle(0, 0, 4) // number of levels done 
 var binomial = Binomial(10, .5) //rythm done 
-var normal = Normal(600, 600) //colors 
+var normal = Normal(600, 600) //colors done
 
 bernoulliButton.addEventListener('click', event => {
   console.log(bernoulli.sampleMany(10));
@@ -331,7 +331,7 @@ function activateTile(color) {
   const tile = document.querySelector(`[data-tile='${color}']`);
   var sound
   if (heading.textContent == `Level ${level} of 20`) {
-    random_sound = Math.floor(uniform.sample()) + 1
+    random_sound = Math.floor(triangle.sample()) + 1
     sound = document.querySelector(`[data-sound='${random_sound}']`);
   }
   if (heading.textContent == `Level ${level} of 10`) {
