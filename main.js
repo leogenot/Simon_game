@@ -252,7 +252,7 @@ normalButton.addEventListener('click', event => {
 
   console.log(final_number);
 
-
+/*
 
   const tile = document.querySelector(`[data-tile='1']`);
   var generated_color = generateColorFromNormal()
@@ -266,7 +266,7 @@ normalButton.addEventListener('click', event => {
   for (let [key, val] of Object.entries(tile_css)) {
     tile.style[key] = val;
   }
-
+*/
 
 
 });
